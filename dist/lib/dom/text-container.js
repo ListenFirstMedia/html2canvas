@@ -1,22 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TextContainer = void 0;
+var text_transform_1 = require("../css/property-descriptors/text-transform");
 var text_1 = require("../css/layout/text");
 var TextContainer = /** @class */ (function () {
-    function TextContainer(context, node, styles) {
+    function TextContainer(node, styles) {
         this.text = transform(node.data, styles.textTransform);
-        this.textBounds = text_1.parseTextBounds(context, this.text, styles, node);
+        this.textBounds = text_1.parseTextBounds(this.text, styles, node);
     }
     return TextContainer;
 }());
 exports.TextContainer = TextContainer;
 var transform = function (text, transform) {
     switch (transform) {
-        case 1 /* LOWERCASE */:
+        case text_transform_1.TEXT_TRANSFORM.LOWERCASE:
             return text.toLowerCase();
-        case 3 /* CAPITALIZE */:
+        case text_transform_1.TEXT_TRANSFORM.CAPITALIZE:
             return text.replace(CAPITALIZE, capitalize);
-        case 2 /* UPPERCASE */:
+        case text_transform_1.TEXT_TRANSFORM.UPPERCASE:
             return text.toUpperCase();
         default:
             return text;

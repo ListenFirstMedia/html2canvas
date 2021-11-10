@@ -1,14 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.transformPath = exports.equalPath = void 0;
-var equalPath = function (a, b) {
+var PathType;
+(function (PathType) {
+    PathType[PathType["VECTOR"] = 0] = "VECTOR";
+    PathType[PathType["BEZIER_CURVE"] = 1] = "BEZIER_CURVE";
+})(PathType = exports.PathType || (exports.PathType = {}));
+exports.equalPath = function (a, b) {
     if (a.length === b.length) {
         return a.some(function (v, i) { return v === b[i]; });
     }
     return false;
 };
-exports.equalPath = equalPath;
-var transformPath = function (path, deltaX, deltaY, deltaW, deltaH) {
+exports.transformPath = function (path, deltaX, deltaY, deltaW, deltaH) {
     return path.map(function (point, index) {
         switch (index) {
             case 0:
@@ -23,5 +26,4 @@ var transformPath = function (path, deltaX, deltaY, deltaW, deltaH) {
         return point;
     });
 };
-exports.transformPath = transformPath;
 //# sourceMappingURL=path.js.map

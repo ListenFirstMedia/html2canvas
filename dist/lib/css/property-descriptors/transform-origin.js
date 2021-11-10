@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.transformOrigin = void 0;
+var IPropertyDescriptor_1 = require("../IPropertyDescriptor");
 var length_percentage_1 = require("../types/length-percentage");
 var tokenizer_1 = require("../syntax/tokenizer");
 var DEFAULT_VALUE = {
-    type: 16 /* PERCENTAGE_TOKEN */,
+    type: tokenizer_1.TokenType.PERCENTAGE_TOKEN,
     number: 50,
     flags: tokenizer_1.FLAG_INTEGER
 };
@@ -13,8 +13,8 @@ exports.transformOrigin = {
     name: 'transform-origin',
     initialValue: '50% 50%',
     prefix: true,
-    type: 1 /* LIST */,
-    parse: function (_context, tokens) {
+    type: IPropertyDescriptor_1.PropertyDescriptorParsingType.LIST,
+    parse: function (tokens) {
         var origins = tokens.filter(length_percentage_1.isLengthPercentage);
         if (origins.length !== 2) {
             return DEFAULT;

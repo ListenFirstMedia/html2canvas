@@ -1,18 +1,23 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.overflowWrap = void 0;
+var IPropertyDescriptor_1 = require("../IPropertyDescriptor");
+var OVERFLOW_WRAP;
+(function (OVERFLOW_WRAP) {
+    OVERFLOW_WRAP["NORMAL"] = "normal";
+    OVERFLOW_WRAP["BREAK_WORD"] = "break-word";
+})(OVERFLOW_WRAP = exports.OVERFLOW_WRAP || (exports.OVERFLOW_WRAP = {}));
 exports.overflowWrap = {
     name: 'overflow-wrap',
     initialValue: 'normal',
     prefix: false,
-    type: 2 /* IDENT_VALUE */,
-    parse: function (_context, overflow) {
+    type: IPropertyDescriptor_1.PropertyDescriptorParsingType.IDENT_VALUE,
+    parse: function (overflow) {
         switch (overflow) {
             case 'break-word':
-                return "break-word" /* BREAK_WORD */;
+                return OVERFLOW_WRAP.BREAK_WORD;
             case 'normal':
             default:
-                return "normal" /* NORMAL */;
+                return OVERFLOW_WRAP.NORMAL;
         }
     }
 };

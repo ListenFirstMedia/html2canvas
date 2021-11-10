@@ -1,24 +1,25 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.fontFamily = void 0;
+var IPropertyDescriptor_1 = require("../IPropertyDescriptor");
+var tokenizer_1 = require("../syntax/tokenizer");
 exports.fontFamily = {
     name: "font-family",
     initialValue: '',
     prefix: false,
-    type: 1 /* LIST */,
-    parse: function (_context, tokens) {
+    type: IPropertyDescriptor_1.PropertyDescriptorParsingType.LIST,
+    parse: function (tokens) {
         var accumulator = [];
         var results = [];
         tokens.forEach(function (token) {
             switch (token.type) {
-                case 20 /* IDENT_TOKEN */:
-                case 0 /* STRING_TOKEN */:
+                case tokenizer_1.TokenType.IDENT_TOKEN:
+                case tokenizer_1.TokenType.STRING_TOKEN:
                     accumulator.push(token.value);
                     break;
-                case 17 /* NUMBER_TOKEN */:
+                case tokenizer_1.TokenType.NUMBER_TOKEN:
                     accumulator.push(token.number.toString());
                     break;
-                case 4 /* COMMA_TOKEN */:
+                case tokenizer_1.TokenType.COMMA_TOKEN:
                     results.push(accumulator.join(' '));
                     accumulator.length = 0;
                     break;

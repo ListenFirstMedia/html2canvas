@@ -1,23 +1,31 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.float = void 0;
+var IPropertyDescriptor_1 = require("../IPropertyDescriptor");
+var FLOAT;
+(function (FLOAT) {
+    FLOAT[FLOAT["NONE"] = 0] = "NONE";
+    FLOAT[FLOAT["LEFT"] = 1] = "LEFT";
+    FLOAT[FLOAT["RIGHT"] = 2] = "RIGHT";
+    FLOAT[FLOAT["INLINE_START"] = 3] = "INLINE_START";
+    FLOAT[FLOAT["INLINE_END"] = 4] = "INLINE_END";
+})(FLOAT = exports.FLOAT || (exports.FLOAT = {}));
 exports.float = {
     name: 'float',
     initialValue: 'none',
     prefix: false,
-    type: 2 /* IDENT_VALUE */,
-    parse: function (_context, float) {
+    type: IPropertyDescriptor_1.PropertyDescriptorParsingType.IDENT_VALUE,
+    parse: function (float) {
         switch (float) {
             case 'left':
-                return 1 /* LEFT */;
+                return FLOAT.LEFT;
             case 'right':
-                return 2 /* RIGHT */;
+                return FLOAT.RIGHT;
             case 'inline-start':
-                return 3 /* INLINE_START */;
+                return FLOAT.INLINE_START;
             case 'inline-end':
-                return 4 /* INLINE_END */;
+                return FLOAT.INLINE_END;
         }
-        return 0 /* NONE */;
+        return FLOAT.NONE;
     }
 };
 //# sourceMappingURL=float.js.map

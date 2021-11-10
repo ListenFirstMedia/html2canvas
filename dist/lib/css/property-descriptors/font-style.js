@@ -1,20 +1,26 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.fontStyle = void 0;
+var IPropertyDescriptor_1 = require("../IPropertyDescriptor");
+var FONT_STYLE;
+(function (FONT_STYLE) {
+    FONT_STYLE["NORMAL"] = "normal";
+    FONT_STYLE["ITALIC"] = "italic";
+    FONT_STYLE["OBLIQUE"] = "oblique";
+})(FONT_STYLE = exports.FONT_STYLE || (exports.FONT_STYLE = {}));
 exports.fontStyle = {
     name: 'font-style',
     initialValue: 'normal',
     prefix: false,
-    type: 2 /* IDENT_VALUE */,
-    parse: function (_context, overflow) {
+    type: IPropertyDescriptor_1.PropertyDescriptorParsingType.IDENT_VALUE,
+    parse: function (overflow) {
         switch (overflow) {
             case 'oblique':
-                return "oblique" /* OBLIQUE */;
+                return FONT_STYLE.OBLIQUE;
             case 'italic':
-                return "italic" /* ITALIC */;
+                return FONT_STYLE.ITALIC;
             case 'normal':
             default:
-                return "normal" /* NORMAL */;
+                return FONT_STYLE.NORMAL;
         }
     }
 };
