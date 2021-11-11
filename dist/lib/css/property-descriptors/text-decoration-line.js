@@ -1,13 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.textDecorationLine = void 0;
+var IPropertyDescriptor_1 = require("../IPropertyDescriptor");
 var parser_1 = require("../syntax/parser");
 exports.textDecorationLine = {
     name: 'text-decoration-line',
     initialValue: 'none',
     prefix: false,
-    type: 1 /* LIST */,
-    parse: function (_context, tokens) {
+    type: IPropertyDescriptor_1.PropertyDescriptorParsingType.LIST,
+    parse: function (tokens) {
         return tokens
             .filter(parser_1.isIdentToken)
             .map(function (token) {

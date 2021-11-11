@@ -1,18 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getQuote = exports.quotes = void 0;
+var IPropertyDescriptor_1 = require("../IPropertyDescriptor");
 var parser_1 = require("../syntax/parser");
+var tokenizer_1 = require("../syntax/tokenizer");
 exports.quotes = {
     name: 'quotes',
     initialValue: 'none',
     prefix: true,
-    type: 1 /* LIST */,
-    parse: function (_context, tokens) {
+    type: IPropertyDescriptor_1.PropertyDescriptorParsingType.LIST,
+    parse: function (tokens) {
         if (tokens.length === 0) {
             return null;
         }
         var first = tokens[0];
-        if (first.type === 20 /* IDENT_TOKEN */ && first.value === 'none') {
+        if (first.type === tokenizer_1.TokenType.IDENT_TOKEN && first.value === 'none') {
             return null;
         }
         var quotes = [];
@@ -28,7 +29,7 @@ exports.quotes = {
         return quotes;
     }
 };
-var getQuote = function (quotes, depth, open) {
+exports.getQuote = function (quotes, depth, open) {
     if (!quotes) {
         return '';
     }
@@ -38,5 +39,4 @@ var getQuote = function (quotes, depth, open) {
     }
     return open ? quote.open : quote.close;
 };
-exports.getQuote = getQuote;
 //# sourceMappingURL=quotes.js.map

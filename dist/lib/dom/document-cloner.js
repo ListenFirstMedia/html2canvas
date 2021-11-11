@@ -1,10 +1,9 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -36,18 +35,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.copyCSSStyles = exports.DocumentCloner = void 0;
 var node_parser_1 = require("./node-parser");
+var logger_1 = require("../core/logger");
 var parser_1 = require("../css/syntax/parser");
+var tokenizer_1 = require("../css/syntax/tokenizer");
 var counter_1 = require("../css/types/functions/counter");
 var list_style_type_1 = require("../css/property-descriptors/list-style-type");
 var index_1 = require("../css/index");
 var quotes_1 = require("../css/property-descriptors/quotes");
-var debugger_1 = require("../core/debugger");
 var IGNORE_ATTRIBUTE = 'data-html2canvas-ignore';
 var DocumentCloner = /** @class */ (function () {
-    function DocumentCloner(context, element, options) {
-        this.context = context;
+    function DocumentCloner(element, options) {
         this.options = options;
         this.scrolledElements = [];
         this.referenceElement = element;
@@ -72,7 +70,7 @@ var DocumentCloner = /** @class */ (function () {
          if window url is about:blank, we can assign the url to current by writing onto the document
          */
         var iframeLoad = iframeLoader(iframe).then(function () { return __awaiter(_this, void 0, void 0, function () {
-            var onclone, referenceElement;
+            var onclone;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -81,13 +79,13 @@ var DocumentCloner = /** @class */ (function () {
                             cloneWindow.scrollTo(windowSize.left, windowSize.top);
                             if (/(iPad|iPhone|iPod)/g.test(navigator.userAgent) &&
                                 (cloneWindow.scrollY !== windowSize.top || cloneWindow.scrollX !== windowSize.left)) {
-                                this.context.logger.warn('Unable to restore scroll position for cloned document');
-                                this.context.windowBounds = this.context.windowBounds.add(cloneWindow.scrollX - windowSize.left, cloneWindow.scrollY - windowSize.top, 0, 0);
+                                documentClone.documentElement.style.top = -windowSize.top + 'px';
+                                documentClone.documentElement.style.left = -windowSize.left + 'px';
+                                documentClone.documentElement.style.position = 'absolute';
                             }
                         }
                         onclone = this.options.onclone;
-                        referenceElement = this.clonedReferenceElement;
-                        if (typeof referenceElement === 'undefined') {
+                        if (typeof this.clonedReferenceElement === 'undefined') {
                             return [2 /*return*/, Promise.reject("Error finding the " + this.referenceElement.nodeName + " in the cloned document")];
                         }
                         if (!(documentClone.fonts && documentClone.fonts.ready)) return [3 /*break*/, 2];
@@ -96,15 +94,9 @@ var DocumentCloner = /** @class */ (function () {
                         _a.sent();
                         _a.label = 2;
                     case 2:
-                        if (!/(AppleWebKit)/g.test(navigator.userAgent)) return [3 /*break*/, 4];
-                        return [4 /*yield*/, imagesReady(documentClone)];
-                    case 3:
-                        _a.sent();
-                        _a.label = 4;
-                    case 4:
                         if (typeof onclone === 'function') {
                             return [2 /*return*/, Promise.resolve()
-                                    .then(function () { return onclone(documentClone, referenceElement); })
+                                    .then(function () { return onclone(documentClone); })
                                     .then(function () { return iframe; })];
                         }
                         return [2 /*return*/, iframe];
@@ -120,24 +112,22 @@ var DocumentCloner = /** @class */ (function () {
         return iframeLoad;
     };
     DocumentCloner.prototype.createElementClone = function (node) {
-        if (debugger_1.isDebugging(node, 2 /* CLONE */)) {
-            debugger;
-        }
         if (node_parser_1.isCanvasElement(node)) {
             return this.createCanvasClone(node);
         }
+        /*
+        if (isIFrameElement(node)) {
+            return this.createIFrameClone(node);
+        }
+*/
         if (node_parser_1.isStyleElement(node)) {
             return this.createStyleClone(node);
         }
         var clone = node.cloneNode(false);
-        if (node_parser_1.isImageElement(clone)) {
-            if (node_parser_1.isImageElement(node) && node.currentSrc && node.currentSrc !== node.src) {
-                clone.src = node.currentSrc;
-                clone.srcset = '';
-            }
-            if (clone.loading === 'lazy') {
-                clone.loading = 'eager';
-            }
+        // @ts-ignore
+        if (node_parser_1.isImageElement(clone) && clone.loading === 'lazy') {
+            // @ts-ignore
+            clone.loading = 'eager';
         }
         return clone;
     };
@@ -158,7 +148,7 @@ var DocumentCloner = /** @class */ (function () {
         }
         catch (e) {
             // accessing node.sheet.cssRules throws a DOMException
-            this.context.logger.error('Unable to access cssRules property', e);
+            logger_1.Logger.getInstance(this.options.id).error('Unable to access cssRules property', e);
             if (e.name !== 'SecurityError') {
                 throw e;
             }
@@ -166,7 +156,6 @@ var DocumentCloner = /** @class */ (function () {
         return node.cloneNode(false);
     };
     DocumentCloner.prototype.createCanvasClone = function (canvas) {
-        var _a;
         if (this.options.inlineImages && canvas.ownerDocument) {
             var img = canvas.ownerDocument.createElement('img');
             try {
@@ -174,7 +163,7 @@ var DocumentCloner = /** @class */ (function () {
                 return img;
             }
             catch (e) {
-                this.context.logger.info("Unable to inline canvas contents, canvas is tainted", canvas);
+                logger_1.Logger.getInstance(this.options.id).info("Unable to clone canvas contents, canvas is tainted");
             }
         }
         var clonedCanvas = canvas.cloneNode(false);
@@ -184,27 +173,79 @@ var DocumentCloner = /** @class */ (function () {
             var ctx = canvas.getContext('2d');
             var clonedCtx = clonedCanvas.getContext('2d');
             if (clonedCtx) {
-                if (!this.options.allowTaint && ctx) {
+                if (ctx) {
                     clonedCtx.putImageData(ctx.getImageData(0, 0, canvas.width, canvas.height), 0, 0);
                 }
                 else {
-                    var gl = (_a = canvas.getContext('webgl2')) !== null && _a !== void 0 ? _a : canvas.getContext('webgl');
-                    if (gl) {
-                        var attribs = gl.getContextAttributes();
-                        if ((attribs === null || attribs === void 0 ? void 0 : attribs.preserveDrawingBuffer) === false) {
-                            this.context.logger.warn('Unable to clone WebGL context as it has preserveDrawingBuffer=false', canvas);
-                        }
-                    }
                     clonedCtx.drawImage(canvas, 0, 0);
                 }
             }
             return clonedCanvas;
         }
-        catch (e) {
-            this.context.logger.info("Unable to clone canvas as it is tainted", canvas);
-        }
+        catch (e) { }
         return clonedCanvas;
     };
+    /*
+    createIFrameClone(iframe: HTMLIFrameElement) {
+        const tempIframe = <HTMLIFrameElement>iframe.cloneNode(false);
+        const iframeKey = generateIframeKey();
+        tempIframe.setAttribute('data-html2canvas-internal-iframe-key', iframeKey);
+
+        const {width, height} = parseBounds(iframe);
+
+        this.resourceLoader.cache[iframeKey] = getIframeDocumentElement(iframe, this.options)
+            .then(documentElement => {
+                return this.renderer(
+                    documentElement,
+                    {
+                        allowTaint: this.options.allowTaint,
+                        backgroundColor: '#ffffff',
+                        canvas: null,
+                        imageTimeout: this.options.imageTimeout,
+                        logging: this.options.logging,
+                        proxy: this.options.proxy,
+                        removeContainer: this.options.removeContainer,
+                        scale: this.options.scale,
+                        foreignObjectRendering: this.options.foreignObjectRendering,
+                        useCORS: this.options.useCORS,
+                        target: new CanvasRenderer(),
+                        width,
+                        height,
+                        x: 0,
+                        y: 0,
+                        windowWidth: documentElement.ownerDocument.defaultView.innerWidth,
+                        windowHeight: documentElement.ownerDocument.defaultView.innerHeight,
+                        scrollX: documentElement.ownerDocument.defaultView.pageXOffset,
+                        scrollY: documentElement.ownerDocument.defaultView.pageYOffset
+                    },
+                );
+            })
+            .then(
+                (canvas: HTMLCanvasElement) =>
+                    new Promise((resolve, reject) => {
+                        const iframeCanvas = document.createElement('img');
+                        iframeCanvas.onload = () => resolve(canvas);
+                        iframeCanvas.onerror = (event) => {
+                            // Empty iframes may result in empty "data:," URLs, which are invalid from the <img>'s point of view
+                            // and instead of `onload` cause `onerror` and unhandled rejection warnings
+                            // https://github.com/niklasvh/html2canvas/issues/1502
+                            iframeCanvas.src == 'data:,' ? resolve(canvas) : reject(event);
+                        };
+                        iframeCanvas.src = canvas.toDataURL();
+                        if (tempIframe.parentNode && iframe.ownerDocument && iframe.ownerDocument.defaultView) {
+                            tempIframe.parentNode.replaceChild(
+                                copyCSSStyles(
+                                    iframe.ownerDocument.defaultView.getComputedStyle(iframe),
+                                    iframeCanvas
+                                ),
+                                tempIframe
+                            );
+                        }
+                    })
+            );
+        return tempIframe;
+    }
+*/
     DocumentCloner.prototype.cloneNode = function (node) {
         if (node_parser_1.isTextNode(node)) {
             return document.createTextNode(node.data);
@@ -215,7 +256,6 @@ var DocumentCloner = /** @class */ (function () {
         var window = node.ownerDocument.defaultView;
         if (window && node_parser_1.isElementNode(node) && (node_parser_1.isHTMLElementNode(node) || node_parser_1.isSVGElementNode(node))) {
             var clone = this.createElementClone(node);
-            clone.style.transitionProperty = 'none';
             var style = window.getComputedStyle(node);
             var styleBefore = window.getComputedStyle(node, ':before');
             var styleAfter = window.getComputedStyle(node, ':after');
@@ -225,7 +265,7 @@ var DocumentCloner = /** @class */ (function () {
             if (node_parser_1.isBodyElement(clone)) {
                 createPseudoHideStyles(clone);
             }
-            var counters = this.counters.parse(new index_1.CSSParsedCounterDeclaration(this.context, style));
+            var counters = this.counters.parse(new index_1.CSSParsedCounterDeclaration(style));
             var before = this.resolvePseudoContent(node, clone, styleBefore, PseudoElementType.BEFORE);
             for (var child = node.firstChild; child; child = child.nextSibling) {
                 if (!node_parser_1.isElementNode(child) ||
@@ -248,6 +288,7 @@ var DocumentCloner = /** @class */ (function () {
             if (style && (this.options.copyStyles || node_parser_1.isSVGElementNode(node)) && !node_parser_1.isIFrameElement(node)) {
                 exports.copyCSSStyles(style, clone);
             }
+            //this.inlineAllImages(clone);
             if (node.scrollTop !== 0 || node.scrollLeft !== 0) {
                 this.scrolledElements.push([clone, node.scrollLeft, node.scrollTop]);
             }
@@ -269,21 +310,21 @@ var DocumentCloner = /** @class */ (function () {
         if (!document || !value || value === 'none' || value === '-moz-alt-content' || style.display === 'none') {
             return;
         }
-        this.counters.parse(new index_1.CSSParsedCounterDeclaration(this.context, style));
-        var declaration = new index_1.CSSParsedPseudoDeclaration(this.context, style);
+        this.counters.parse(new index_1.CSSParsedCounterDeclaration(style));
+        var declaration = new index_1.CSSParsedPseudoDeclaration(style);
         var anonymousReplacedElement = document.createElement('html2canvaspseudoelement');
         exports.copyCSSStyles(style, anonymousReplacedElement);
         declaration.content.forEach(function (token) {
-            if (token.type === 0 /* STRING_TOKEN */) {
+            if (token.type === tokenizer_1.TokenType.STRING_TOKEN) {
                 anonymousReplacedElement.appendChild(document.createTextNode(token.value));
             }
-            else if (token.type === 22 /* URL_TOKEN */) {
+            else if (token.type === tokenizer_1.TokenType.URL_TOKEN) {
                 var img = document.createElement('img');
                 img.src = token.value;
                 img.style.opacity = '1';
                 anonymousReplacedElement.appendChild(img);
             }
-            else if (token.type === 18 /* FUNCTION */) {
+            else if (token.type === tokenizer_1.TokenType.FUNCTION) {
                 if (token.name === 'attr') {
                     var attr = token.values.filter(parser_1.isIdentToken);
                     if (attr.length) {
@@ -295,8 +336,8 @@ var DocumentCloner = /** @class */ (function () {
                     if (counter && parser_1.isIdentToken(counter)) {
                         var counterState = _this.counters.getCounterValue(counter.value);
                         var counterType = counterStyle && parser_1.isIdentToken(counterStyle)
-                            ? list_style_type_1.listStyleType.parse(_this.context, counterStyle.value)
-                            : 3 /* DECIMAL */;
+                            ? list_style_type_1.listStyleType.parse(counterStyle.value)
+                            : list_style_type_1.LIST_STYLE_TYPE.DECIMAL;
                         anonymousReplacedElement.appendChild(document.createTextNode(counter_1.createCounterText(counterState, counterType, false)));
                     }
                 }
@@ -305,9 +346,9 @@ var DocumentCloner = /** @class */ (function () {
                     if (counter && parser_1.isIdentToken(counter)) {
                         var counterStates = _this.counters.getCounterValues(counter.value);
                         var counterType_1 = counterStyle && parser_1.isIdentToken(counterStyle)
-                            ? list_style_type_1.listStyleType.parse(_this.context, counterStyle.value)
-                            : 3 /* DECIMAL */;
-                        var separator = delim && delim.type === 0 /* STRING_TOKEN */ ? delim.value : '';
+                            ? list_style_type_1.listStyleType.parse(counterStyle.value)
+                            : list_style_type_1.LIST_STYLE_TYPE.DECIMAL;
+                        var separator = delim && delim.type === tokenizer_1.TokenType.STRING_TOKEN ? delim.value : '';
                         var text = counterStates
                             .map(function (value) { return counter_1.createCounterText(value, counterType_1, false); })
                             .join(separator);
@@ -318,7 +359,7 @@ var DocumentCloner = /** @class */ (function () {
                     //   console.log('FUNCTION_TOKEN', token);
                 }
             }
-            else if (token.type === 20 /* IDENT_TOKEN */) {
+            else if (token.type === tokenizer_1.TokenType.IDENT_TOKEN) {
                 switch (token.value) {
                     case 'open-quote':
                         anonymousReplacedElement.appendChild(document.createTextNode(quotes_1.getQuote(declaration.quotes, _this.quoteDepth++, true)));
@@ -374,23 +415,6 @@ var createIFrameContainer = function (ownerDocument, bounds) {
     ownerDocument.body.appendChild(cloneIframeContainer);
     return cloneIframeContainer;
 };
-var imageReady = function (img) {
-    return new Promise(function (resolve) {
-        if (img.complete) {
-            resolve();
-            return;
-        }
-        if (!img.src) {
-            resolve();
-            return;
-        }
-        img.onload = resolve;
-        img.onerror = resolve;
-    });
-};
-var imagesReady = function (document) {
-    return Promise.all([].slice.call(document.images, 0).map(imageReady));
-};
 var iframeLoader = function (iframe) {
     return new Promise(function (resolve, reject) {
         var cloneWindow = iframe.contentWindow;
@@ -398,8 +422,8 @@ var iframeLoader = function (iframe) {
             return reject("No window assigned for iframe");
         }
         var documentClone = cloneWindow.document;
-        cloneWindow.onload = iframe.onload = function () {
-            cloneWindow.onload = iframe.onload = null;
+        cloneWindow.onload = iframe.onload = documentClone.onreadystatechange = function () {
+            cloneWindow.onload = iframe.onload = documentClone.onreadystatechange = null;
             var interval = setInterval(function () {
                 if (documentClone.body.childNodes.length > 0 && documentClone.readyState === 'complete') {
                     clearInterval(interval);
@@ -409,22 +433,17 @@ var iframeLoader = function (iframe) {
         };
     });
 };
-var ignoredStyleProperties = [
-    'all',
-    'd',
-    'content' // Safari shows pseudoelements if content is set
-];
-var copyCSSStyles = function (style, target) {
+exports.copyCSSStyles = function (style, target) {
     // Edge does not provide value for cssText
     for (var i = style.length - 1; i >= 0; i--) {
         var property = style.item(i);
-        if (ignoredStyleProperties.indexOf(property) === -1) {
+        // Safari shows pseudoelements if content is set
+        if (property !== 'content') {
             target.style.setProperty(property, style.getPropertyValue(property));
         }
     }
     return target;
 };
-exports.copyCSSStyles = copyCSSStyles;
 var serializeDoctype = function (doctype) {
     var str = '';
     if (doctype) {

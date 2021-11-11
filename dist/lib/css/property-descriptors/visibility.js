@@ -1,20 +1,26 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.visibility = void 0;
+var IPropertyDescriptor_1 = require("../IPropertyDescriptor");
+var VISIBILITY;
+(function (VISIBILITY) {
+    VISIBILITY[VISIBILITY["VISIBLE"] = 0] = "VISIBLE";
+    VISIBILITY[VISIBILITY["HIDDEN"] = 1] = "HIDDEN";
+    VISIBILITY[VISIBILITY["COLLAPSE"] = 2] = "COLLAPSE";
+})(VISIBILITY = exports.VISIBILITY || (exports.VISIBILITY = {}));
 exports.visibility = {
     name: 'visible',
     initialValue: 'none',
     prefix: false,
-    type: 2 /* IDENT_VALUE */,
-    parse: function (_context, visibility) {
+    type: IPropertyDescriptor_1.PropertyDescriptorParsingType.IDENT_VALUE,
+    parse: function (visibility) {
         switch (visibility) {
             case 'hidden':
-                return 1 /* HIDDEN */;
+                return VISIBILITY.HIDDEN;
             case 'collapse':
-                return 2 /* COLLAPSE */;
+                return VISIBILITY.COLLAPSE;
             case 'visible':
             default:
-                return 0 /* VISIBLE */;
+                return VISIBILITY.VISIBLE;
         }
     }
 };

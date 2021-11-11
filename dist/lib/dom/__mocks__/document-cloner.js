@@ -1,16 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DocumentCloner = void 0;
 var DocumentCloner = /** @class */ (function () {
     function DocumentCloner() {
-        this.clonedReferenceElement = {
-            ownerDocument: {
-                defaultView: {
-                    pageXOffset: 12,
-                    pageYOffset: 34
-                }
-            }
-        };
+        // eslint-disable-next-line @typescript-eslint/no-object-literal-type-assertion
+        this.clonedReferenceElement = {};
     }
     DocumentCloner.prototype.toIFrame = function () {
         return Promise.resolve({});

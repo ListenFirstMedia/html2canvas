@@ -2,12 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var logger_1 = require("../logger");
 describe('logger', function () {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     var infoSpy;
     beforeEach(function () {
-        infoSpy = jest.spyOn(console, 'info').mockImplementation(function () {
-            // do nothing
-        });
+        infoSpy = jest.spyOn(console, 'info').mockImplementation(function () { });
     });
     afterEach(function () {
         infoSpy.mockRestore();

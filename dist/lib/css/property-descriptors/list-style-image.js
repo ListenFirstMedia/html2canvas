@@ -1,17 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.listStyleImage = void 0;
+var tokenizer_1 = require("../syntax/tokenizer");
 var image_1 = require("../types/image");
+var IPropertyDescriptor_1 = require("../IPropertyDescriptor");
 exports.listStyleImage = {
     name: 'list-style-image',
     initialValue: 'none',
-    type: 0 /* VALUE */,
+    type: IPropertyDescriptor_1.PropertyDescriptorParsingType.VALUE,
     prefix: false,
-    parse: function (context, token) {
-        if (token.type === 20 /* IDENT_TOKEN */ && token.value === 'none') {
+    parse: function (token) {
+        if (token.type === tokenizer_1.TokenType.IDENT_TOKEN && token.value === 'none') {
             return null;
         }
-        return image_1.image.parse(context, token);
+        return image_1.image.parse(token);
     }
 };
 //# sourceMappingURL=list-style-image.js.map
